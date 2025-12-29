@@ -1,77 +1,145 @@
 
 import React, { useState } from 'react';
+import { useSystem } from '../../context/SystemContext';
+import { AIAgent } from '../../types';
 
 const Marketplace: React.FC = () => {
-  const [buyingId, setBuyingId] = useState<number | null>(null);
-  const assets = [
-    { name: 'Ultra-Realist Portait v4', type: 'Prompt Kit', price: '$24', category: 'Photography', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Lo-Fi Chill Hop Loop', type: 'Audio Asset', price: '$12', category: 'Music', img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Cyberpunk Site Layout', type: 'Site Template', price: '$89', category: 'Web', img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800' },
-    { name: 'Nebula cinematic Background', type: 'Video Asset', price: '$45', category: 'Cinema', img: 'https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&q=80&w=800' }
+  const { hireAgent, hiredAgents } = useSystem();
+  const [hiringId, setHiringId] = useState<string | null>(null);
+
+  const availableAgents: AIAgent[] = [
+    {
+      id: 'agent-1',
+      name: 'Senior Architect "Nexus"',
+      specialty: 'UI/UX & Codebase Integrity',
+      description: 'Master of React, Tailwind, and system architecture. Designed for 99.9% logical accuracy.',
+      avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200',
+      pricePerTask: '240 CR',
+      rating: 4.9,
+      capabilities: ['Component Auditing', 'CSS Refactoring', 'Logic Optimization'],
+      systemInstruction: 'You are Nexus, a Senior Software Architect. Your responses are technically dense, focusing on performance and scalability.'
+    },
+    {
+      id: 'agent-2',
+      name: 'Growth Hacker "Vera"',
+      specialty: 'Marketing & Conversion Ops',
+      description: 'Autonomous marketing specialist. Analyzes user behavior to forge high-converting copy.',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+      pricePerTask: '180 CR',
+      rating: 4.8,
+      capabilities: ['Copywriting', 'SEO Mapping', 'Viral Loop Synthesis'],
+      systemInstruction: 'You are Vera, a high-octane Marketing Strategist. You speak in terms of ROI, conversion rates, and psychological triggers.'
+    },
+    {
+      id: 'agent-3',
+      name: 'Legal Node "Lex"',
+      specialty: 'Compliance & IP Protection',
+      description: 'Expert in digital licensing and international IP protocols. Protect your creative assets.',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+      pricePerTask: '320 CR',
+      rating: 5.0,
+      capabilities: ['License Forging', 'Terms Synthesis', 'IP Auditing'],
+      systemInstruction: 'You are Lex, a Global IP Legal Counsel. You provide precise, cautionary, and structured legal advice for creative businesses.'
+    },
+    {
+      id: 'agent-4',
+      name: 'Cinema Director "Orion"',
+      specialty: 'Veo Scripting & Storyboarding',
+      description: 'Advanced cinematic intelligence. Optimizes text-to-video prompts for peak Hollywood fidelity.',
+      avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=200',
+      pricePerTask: '290 CR',
+      rating: 4.7,
+      capabilities: ['Script Writing', 'Lighting Directives', 'Motion Analysis'],
+      systemInstruction: 'You are Orion, a Cinematic Director. You visualize everything in terms of camera lenses, lighting setups, and emotional pacing.'
+    }
   ];
 
-  const handlePurchase = (id: number) => {
-    setBuyingId(id);
+  const handleHire = (agent: AIAgent) => {
+    setHiringId(agent.id);
     setTimeout(() => {
-      setBuyingId(null);
-      alert("License forged and allocated to your Master ID vault.");
-    }, 2000);
+      hireAgent(agent);
+      setHiringId(null);
+    }, 1500);
   };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <div className="space-y-2">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="space-y-3">
           <div className="inline-flex items-center px-4 py-1.5 bg-indigo-500/10 rounded-full border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-2">Neural Creative Exchange</div>
-          <h2 className="text-5xl font-black text-white tracking-tighter">AI Marketplace</h2>
-          <p className="text-slate-400 text-xl">Discover, license, and deploy high-fidelity autonomous assets.</p>
+          <h2 className="text-6xl font-black text-white tracking-tighter">Neural <span className="gradient-text">Marketplace</span></h2>
+          <p className="text-slate-400 text-xl font-medium">Lease professional autonomous assistants for specialized system operations.</p>
         </div>
-        <div className="flex bg-white/5 rounded-2xl p-2 border border-white/10 shadow-2xl">
-           <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg">Trending</button>
-           <button className="px-6 py-2 text-slate-500 hover:text-white transition-all text-sm font-bold">Newest</button>
-           <button className="px-6 py-2 text-slate-500 hover:text-white transition-all text-sm font-bold">Bestsellers</button>
-        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {availableAgents.map((agent) => {
+          const isHired = hiredAgents.some(a => a.id === agent.id);
+          return (
+            <div key={agent.id} className="glass-card rounded-[3rem] border border-white/5 overflow-hidden flex flex-col md:flex-row p-8 gap-8 group hover:bg-white/[0.04] transition-all">
+               <div className="w-32 h-32 md:w-48 md:h-48 rounded-[2.5rem] overflow-hidden flex-shrink-0 border-2 border-white/10 shadow-2xl relative">
+                  <img src={agent.avatar} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={agent.name} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 flex items-center space-x-1">
+                    <i className="fa-solid fa-star text-amber-400 text-[10px]"></i>
+                    <span className="text-[10px] font-bold text-white">{agent.rating}</span>
+                  </div>
+               </div>
+               
+               <div className="flex-1 flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                       <h4 className="text-2xl font-black text-white tracking-tight">{agent.name}</h4>
+                       <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">{agent.pricePerTask}</span>
+                    </div>
+                    <p className="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-4">{agent.specialty}</p>
+                    <p className="text-sm text-slate-400 leading-relaxed font-medium mb-6">"{agent.description}"</p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {agent.capabilities.map(cap => (
+                        <span key={cap} className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black text-slate-300 uppercase tracking-tighter border border-white/5">
+                          {cap}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => handleHire(agent)}
+                    disabled={isHired || hiringId === agent.id}
+                    className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                      isHired 
+                        ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 cursor-default' 
+                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/20'
+                    }`}
+                  >
+                    {hiringId === agent.id ? <i className="fa-solid fa-circle-notch animate-spin mr-2"></i> : null}
+                    {isHired ? 'Agent Deployed' : hiringId === agent.id ? 'Initializing Neural Link' : 'Lease Professional Assistant'}
+                  </button>
+               </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {assets.map((asset, i) => (
-          <div key={i} className="group glass-card rounded-[2.5rem] border border-white/10 overflow-hidden hover:bg-white/[0.05] transition-all hover:-translate-y-2 shadow-xl relative">
-             <div className="h-64 relative overflow-hidden">
-                <img src={asset.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={asset.name} />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-black px-3 py-1 rounded-full border border-white/10 uppercase tracking-widest">{asset.category}</span>
-                </div>
-             </div>
-             <div className="p-8 space-y-4">
-                <div className="space-y-1">
-                   <p className="text-xs font-black text-indigo-400 uppercase tracking-widest">{asset.type}</p>
-                   <h4 className="text-xl font-bold text-white leading-tight">{asset.name}</h4>
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                   <span className="text-2xl font-black text-white">{asset.price}</span>
-                   <button 
-                    onClick={() => handlePurchase(i)}
-                    disabled={buyingId !== null}
-                    className="w-12 h-12 bg-white/5 hover:bg-indigo-600 text-white rounded-xl transition-all border border-white/10 flex items-center justify-center disabled:opacity-50"
-                   >
-                      {buyingId === i ? <i className="fa-solid fa-circle-notch animate-spin"></i> : <i className="fa-solid fa-cart-shopping"></i>}
-                   </button>
-                </div>
-             </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
-         <div className="absolute right-0 top-0 h-full w-1/3 opacity-20 pointer-events-none">
-            <i className="fa-solid fa-rocket text-[120px] rotate-12 -translate-y-10 translate-x-10"></i>
+      <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-[4rem] p-16 border border-white/10 text-center relative overflow-hidden shadow-2xl">
+         <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <i className="fa-solid fa-users text-[300px] -translate-y-20"></i>
          </div>
-         <div className="relative z-10 space-y-6 max-w-2xl">
-            <h3 className="text-4xl font-black tracking-tighter">Monetize Your Intelligence</h3>
-            <p className="text-indigo-100 text-xl font-medium">Join 5,000+ AI artists selling their prompts and creative blueprints on the global Nova Creative Exchange.</p>
-            <button className="px-12 py-5 bg-white text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-2xl">
-              Start Selling
-            </button>
+         <div className="relative z-10 space-y-8 max-w-3xl mx-auto">
+            <h3 className="text-4xl font-black text-white tracking-tighter leading-tight">Professional Collective</h3>
+            <p className="text-slate-400 text-xl font-medium leading-relaxed">Leased assistants are automatically added to your Neural Intelligence chat. Switch between experts seamlessly to tackle multi-dimensional projects.</p>
+            <div className="flex justify-center space-x-12 pt-4">
+               <div>
+                  <p className="text-3xl font-black text-white">42</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Nodes</p>
+               </div>
+               <div className="w-[1px] h-12 bg-white/10"></div>
+               <div>
+                  <p className="text-3xl font-black text-white">99.9%</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Logic Accuracy</p>
+               </div>
+            </div>
          </div>
       </div>
     </div>

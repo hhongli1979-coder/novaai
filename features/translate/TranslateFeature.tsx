@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { translateText } from '../../services/geminiService';
+import React, { useState, useEffect, useRef } from 'react';
+import { translateText, generateSpeech, decodeBase64, playPcmAudio } from '../../services/geminiService';
 
 const TranslateFeature: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -8,6 +8,10 @@ const TranslateFeature: React.FC = () => {
   const [targetLang, setTargetLang] = useState('English');
   const [tone, setTone] = useState('professional');
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  
+  const recognitionRef = useRef<any>(null);
 
   const languages = [
     'English', 'Chinese (Simplified)', 'Japanese', 'Spanish', 
@@ -21,6 +25,38 @@ const TranslateFeature: React.FC = () => {
     { id: 'formal', label: 'Formal', icon: 'fa-user-tie' }
   ];
 
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(prev => prev ? `${prev} ${transcript}` : transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const handleListen = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      setIsListening(true);
+      recognitionRef.current?.start();
+    }
+  };
+
   const handleTranslate = async () => {
     if (!inputText.trim() || isTranslating) return;
 
@@ -33,6 +69,22 @@ const TranslateFeature: React.FC = () => {
       alert("Neural bridge unstable. Translation failed.");
     } finally {
       setIsTranslating(false);
+    }
+  };
+
+  const handleSpeak = async () => {
+    if (!outputText || isSpeaking) return;
+    setIsSpeaking(true);
+    try {
+      // Map languages to best prebuilt voices if possible, otherwise default to Kore
+      const voice = targetLang.includes('Chinese') ? 'Puck' : 'Kore';
+      const base64Audio = await generateSpeech(outputText, voice);
+      const audioData = decodeBase64(base64Audio);
+      await playPcmAudio(audioData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSpeaking(false);
     }
   };
 
@@ -54,18 +106,29 @@ const TranslateFeature: React.FC = () => {
         <div className="glass-card rounded-[3rem] p-10 border border-white/5 flex flex-col space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Source Input</span>
-            <span className="text-[10px] font-bold text-indigo-400 uppercase bg-indigo-500/10 px-3 py-1 rounded-full">Auto-Detect</span>
+            <span className="text-[10px] font-bold text-indigo-400 uppercase bg-indigo-500/10 px-3 py-1 rounded-full">Neural Logic</span>
           </div>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter text to translate..."
+            placeholder="Enter text or use microphone..."
             className="flex-1 bg-transparent border-none text-2xl text-white font-medium resize-none focus:outline-none placeholder:text-slate-700"
           />
           <div className="flex justify-between items-center pt-6 border-t border-white/5">
              <div className="flex space-x-4">
-                <button className="text-slate-500 hover:text-white transition-colors">
-                   <i className="fa-solid fa-microphone"></i>
+                <button 
+                  onClick={handleListen}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${isListening ? 'bg-rose-500 text-white animate-pulse' : 'bg-white/5 text-slate-500 hover:text-white'}`}
+                  title="Speech to Text"
+                >
+                   <i className={`fa-solid ${isListening ? 'fa-stop' : 'fa-microphone'}`}></i>
+                </button>
+                <button 
+                  onClick={() => setInputText('')}
+                  className="w-12 h-12 rounded-2xl bg-white/5 text-slate-500 hover:text-rose-400 flex items-center justify-center transition-all"
+                  title="Clear Input"
+                >
+                   <i className="fa-solid fa-trash-can"></i>
                 </button>
              </div>
              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{inputText.length} Characters</p>
@@ -79,7 +142,7 @@ const TranslateFeature: React.FC = () => {
             <select 
               value={targetLang}
               onChange={(e) => setTargetLang(e.target.value)}
-              className="bg-slate-900 border border-white/10 text-white rounded-xl px-4 py-1 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="bg-slate-900 border border-white/10 text-white rounded-xl px-4 py-1 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer"
             >
               {languages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
             </select>
@@ -103,19 +166,24 @@ const TranslateFeature: React.FC = () => {
 
           <div className="flex justify-between items-center pt-6 border-t border-white/5">
              <div className="flex space-x-4">
-                <button onClick={copyToClipboard} className="text-slate-500 hover:text-indigo-400 transition-colors">
+                <button onClick={copyToClipboard} className="w-12 h-12 rounded-2xl bg-white/5 text-slate-500 hover:text-indigo-400 flex items-center justify-center transition-all" title="Copy Translation">
                    <i className="fa-solid fa-copy"></i>
                 </button>
-                <button className="text-slate-500 hover:text-indigo-400 transition-colors">
-                   <i className="fa-solid fa-volume-high"></i>
+                <button 
+                  onClick={handleSpeak}
+                  disabled={!outputText || isSpeaking}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${isSpeaking ? 'bg-indigo-500 text-white animate-bounce' : 'bg-white/5 text-slate-500 hover:text-indigo-400 disabled:opacity-30'}`}
+                  title="Play Pronunciation"
+                >
+                   <i className={`fa-solid ${isSpeaking ? 'fa-spinner animate-spin' : 'fa-volume-high'}`}></i>
                 </button>
              </div>
              <button 
                 onClick={handleTranslate}
                 disabled={!inputText.trim() || isTranslating}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 disabled:opacity-50"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/20 disabled:opacity-50 active:scale-95"
              >
-                Synthesize
+                {isTranslating ? 'Processing...' : 'Synthesize'}
              </button>
           </div>
         </div>
@@ -133,7 +201,7 @@ const TranslateFeature: React.FC = () => {
               onClick={() => setTone(t.id)}
               className={`p-8 rounded-[2rem] border transition-all flex flex-col items-center space-y-4 group ${
                 tone === t.id 
-                  ? 'bg-indigo-600 border-indigo-500 shadow-2xl' 
+                  ? 'bg-indigo-600 border-indigo-500 shadow-2xl scale-105' 
                   : 'bg-white/5 border-white/5 hover:bg-white/10'
               }`}
             >

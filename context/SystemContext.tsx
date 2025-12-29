@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { AIAgent, UserRole } from '../types';
 
 interface SystemSettings {
   isChatEnabled: boolean;
@@ -9,11 +10,9 @@ interface SystemSettings {
   globalComputeBudget: number;
   activeModel: string;
   maintenanceMode: boolean;
-  // Deployment Secrets
   vercelToken: string;
   vercelOrgId: string;
   vercelProjectId: string;
-  // AI Gateway & Domain Config
   isAiGatewayEnabled: boolean;
   aiGatewayUrl: string;
   baseDomain: string;
@@ -23,11 +22,16 @@ interface SystemContextType {
   settings: SystemSettings;
   updateSettings: (newSettings: Partial<SystemSettings>) => void;
   systemHealth: number;
+  hiredAgents: AIAgent[];
+  hireAgent: (agent: AIAgent) => void;
+  userRole: UserRole;
+  setUserRole: (role: UserRole) => void;
 }
 
 const SystemContext = createContext<SystemContextType | undefined>(undefined);
 
 export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [userRole, setUserRole] = useState<UserRole>(UserRole.GUEST);
   const [settings, setSettings] = useState<SystemSettings>(() => {
     const saved = localStorage.getItem('nova_system_settings');
     return saved ? JSON.parse(saved) : {
@@ -47,13 +51,21 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   });
 
+  const [hiredAgents, setHiredAgents] = useState<AIAgent[]>(() => {
+    const saved = localStorage.getItem('nova_hired_agents');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [systemHealth, setSystemHealth] = useState(98.4);
 
   useEffect(() => {
     localStorage.setItem('nova_system_settings', JSON.stringify(settings));
   }, [settings]);
 
-  // Simulate slight health fluctuations
+  useEffect(() => {
+    localStorage.setItem('nova_hired_agents', JSON.stringify(hiredAgents));
+  }, [hiredAgents]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setSystemHealth(prev => {
@@ -68,8 +80,15 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const hireAgent = (agent: AIAgent) => {
+    setHiredAgents(prev => {
+      if (prev.find(a => a.id === agent.id)) return prev;
+      return [...prev, agent];
+    });
+  };
+
   return (
-    <SystemContext.Provider value={{ settings, updateSettings, systemHealth }}>
+    <SystemContext.Provider value={{ settings, updateSettings, systemHealth, hiredAgents, hireAgent, userRole, setUserRole }}>
       {children}
     </SystemContext.Provider>
   );

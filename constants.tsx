@@ -1,5 +1,7 @@
+
 export const MODELS = {
   TEXT: 'gemini-3-flash-preview',
+  LITE: 'gemini-flash-lite-latest',
   IMAGE: 'gemini-2.5-flash-image',
   IMAGE_PRO: 'gemini-3-pro-image-preview',
   VIDEO: 'veo-3.1-fast-generate-preview'

@@ -1,18 +1,21 @@
 
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
-import { AppRoute } from './types';
+import { AppRoute, UserRole } from './types';
 import Dashboard from './features/dashboard/Dashboard';
 import AIChat from './features/chat/AIChat';
 import ImageForge from './features/image/ImageForge';
 import VideoStudio from './features/video/VideoStudio';
 import TranslateFeature from './features/translate/TranslateFeature';
+import NeuralEdge from './features/neural-edge/NeuralEdge';
 import VirtualStore from './features/ar-store/VirtualStore';
 import Marketplace from './features/marketplace/Marketplace';
 import SiteBuilder from './features/builder/SiteBuilder';
 import AdminConsole from './features/admin/AdminConsole';
+import { useSystem } from './context/SystemContext';
 
 const App: React.FC = () => {
+  const { userRole, setUserRole } = useSystem();
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.DASHBOARD);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
@@ -26,6 +29,7 @@ const App: React.FC = () => {
       "Mapping Vercel Cloud Infrastructure...",
       "Synchronizing with mdio.shop edge nodes...",
       "Activating Gemini 3 Pro reasoning cluster...",
+      "Deploying Neural Edge (Lite) operational cache...",
       "System Ready. Awaiting Master Identity..."
     ];
 
@@ -43,11 +47,24 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (role: UserRole) => {
+    setUserRole(role);
     setIsAuthenticated(true);
+    setCurrentRoute(AppRoute.DASHBOARD);
   };
 
   const renderContent = () => {
+    // Route guard for Admin/Settings
+    if ((currentRoute === AppRoute.ADMIN || currentRoute === AppRoute.SETTINGS) && userRole !== UserRole.ADMIN) {
+      return <Dashboard onNavigate={setCurrentRoute} />;
+    }
+
+    // Route guard for Creator-tier features (Video, AR, etc)
+    const creatorRoutes = [AppRoute.VIDEO, AppRoute.TRANSLATE, AppRoute.NEURAL_EDGE, AppRoute.AR_STORE, AppRoute.MARKETPLACE, AppRoute.BUILDER];
+    if (creatorRoutes.includes(currentRoute) && userRole === UserRole.GUEST) {
+      return <Dashboard onNavigate={setCurrentRoute} />;
+    }
+
     switch (currentRoute) {
       case AppRoute.DASHBOARD:
         return <Dashboard onNavigate={setCurrentRoute} />;
@@ -59,6 +76,8 @@ const App: React.FC = () => {
         return <VideoStudio />;
       case AppRoute.TRANSLATE:
         return <TranslateFeature />;
+      case AppRoute.NEURAL_EDGE:
+        return <NeuralEdge />;
       case AppRoute.AR_STORE:
         return <VirtualStore />;
       case AppRoute.MARKETPLACE:
@@ -132,20 +151,39 @@ const App: React.FC = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[150px] rounded-full"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[150px] rounded-full"></div>
         
-        <div className="glass-card max-w-md w-full rounded-[3rem] p-12 border border-white/10 shadow-2xl flex flex-col items-center text-center space-y-10 relative z-10">
+        <div className="glass-card max-w-xl w-full rounded-[3rem] p-12 border border-white/10 shadow-2xl flex flex-col items-center text-center space-y-10 relative z-10">
            <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-indigo-400 text-3xl">
               <i className="fa-solid fa-fingerprint animate-pulse"></i>
            </div>
            <div className="space-y-3">
               <h1 className="text-4xl font-black text-white tracking-tighter">NOVA <span className="gradient-text">OS</span></h1>
-              <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">Master Identity Verification</p>
+              <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">Neural Identity Access</p>
            </div>
-           <button 
-             onClick={handleLogin}
-             className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/20 transition-all active:scale-95"
-           >
-             Initialize Neural Link
-           </button>
+
+           <div className="grid grid-cols-1 gap-4 w-full">
+              <button 
+                onClick={() => handleLogin(UserRole.ADMIN)}
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center space-x-3"
+              >
+                <i className="fa-solid fa-crown"></i>
+                <span>Admin Master Link</span>
+              </button>
+              <button 
+                onClick={() => handleLogin(UserRole.CREATOR)}
+                className="w-full py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3"
+              >
+                <i className="fa-solid fa-wand-sparkles"></i>
+                <span>Creator Identity</span>
+              </button>
+              <button 
+                onClick={() => handleLogin(UserRole.GUEST)}
+                className="w-full py-4 bg-transparent hover:bg-white/5 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3"
+              >
+                <i className="fa-solid fa-user-secret"></i>
+                <span>Guest Protocol</span>
+              </button>
+           </div>
+
            <p className="text-[9px] text-slate-600 font-medium">By connecting, you agree to the Nova Autonomous System Protocols.</p>
         </div>
       </div>
@@ -167,21 +205,21 @@ const App: React.FC = () => {
           <div className="flex items-center space-x-4">
              <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-widest text-indigo-400 shadow-inner">Nova Autonomous OS</div>
              <i className="fa-solid fa-chevron-right text-[10px] opacity-20"></i>
-             <span className="text-sm font-bold capitalize text-white opacity-80">{currentRoute.replace('-', ' ')}</span>
+             <span className="text-sm font-bold capitalize text-white opacity-80">{(currentRoute as string).replace('-', ' ')}</span>
           </div>
           
           <div className="flex items-center space-x-8">
             <div className="hidden lg:flex items-center space-x-6">
                <div className="flex flex-col items-end">
-                  <span className="text-xs font-black text-indigo-400 tracking-tighter">MASTER IDENTITY</span>
-                  <span className="text-[10px] text-slate-500 font-bold">Admin Privileges Active</span>
+                  <span className="text-xs font-black text-indigo-400 tracking-tighter uppercase">{userRole} IDENTITY</span>
+                  <span className="text-[10px] text-slate-500 font-bold">{userRole === UserRole.ADMIN ? 'Root Privileges Active' : 'Restricted Access'}</span>
                </div>
                <div className="w-[1px] h-10 bg-white/10"></div>
             </div>
             <div className="flex items-center space-x-5">
                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-black text-white">System Architect</p>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Root Access</p>
+                  <p className="text-sm font-black text-white">{userRole === UserRole.ADMIN ? 'System Architect' : userRole === UserRole.CREATOR ? 'Content Engine' : 'Anonymous Guest'}</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{userRole} Access</p>
                </div>
                <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl p-0.5 shadow-2xl transform hover:scale-105 transition-all cursor-pointer">
                   <img src="https://picsum.photos/200/200?grayscale" className="w-full h-full rounded-[0.85rem] object-cover border-2 border-slate-950 shadow-inner" alt="Identity" />

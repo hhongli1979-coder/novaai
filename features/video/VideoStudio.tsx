@@ -6,9 +6,7 @@ import { useSystem } from '../../context/SystemContext';
 
 /**
  * Nova Cinema Studio
- * Powered exclusively by Google Veo 3.1.
- * No external LLMs like Llama are required as Gemini/Veo provides 
- * native end-to-end multimodal intelligence.
+ * High-fidelity motion synthesis powered by Google Veo.
  */
 const VideoStudio: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -36,7 +34,7 @@ const VideoStudio: React.FC = () => {
   const handleOpenKeySelector = async () => {
     try {
       await (window as any).aistudio?.openSelectKey();
-      // Assume success to prevent race conditions as per core guidelines
+      // Proceeding after triggering as per race condition guidelines
       setHasApiKey(true);
     } catch (e) {
       console.error("Authorization Interface Failed", e);
@@ -49,7 +47,7 @@ const VideoStudio: React.FC = () => {
     setIsGenerating(true);
     setProgressMsg("Connecting to Cinematic Render Cluster...");
     try {
-      // Correctly passing the user-selected resolution and aspect ratio to the Veo service
+      // Passing the resolution state to the Veo service
       const videoUrl = await generateVideoWithVeo(prompt, resolution, aspectRatio, setProgressMsg);
       const newResult: GeneratedVideo = {
         id: Date.now().toString(),
@@ -139,40 +137,40 @@ const VideoStudio: React.FC = () => {
               <label className="block text-xs font-black text-slate-500 uppercase tracking-widest px-2 flex items-center">
                 <i className="fa-solid fa-expand mr-3 text-indigo-400"></i> Output Fidelity
               </label>
-              <div className="flex bg-slate-950 p-2 rounded-2xl border border-white/5">
-                {(['720p', '1080p'] as const).map(res => (
-                  <button
-                    key={res}
-                    onClick={() => setResolution(res)}
-                    disabled={isGenerating}
-                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                      resolution === res ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
-                    }`}
-                  >
-                    {res}
-                  </button>
-                ))}
+              <div className="relative group">
+                <select
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value as '720p' | '1080p')}
+                  disabled={isGenerating}
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner"
+                >
+                  <option value="720p">720p - Standard High Definition</option>
+                  <option value="1080p">1080p - Ultra High Fidelity Cinema</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-chevron-down"></i>
+                </div>
               </div>
             </div>
 
             {/* ASPECT RATIO SELECTOR */}
             <div className="space-y-4">
               <label className="block text-xs font-black text-slate-500 uppercase tracking-widest px-2 flex items-center">
-                <i className="fa-solid fa-crop mr-3 text-indigo-400"></i> Aspect Mapping
+                <i className="fa-solid fa-crop mr-3 text-indigo-400"></i> Frame Mapping
               </label>
-              <div className="flex bg-slate-950 p-2 rounded-2xl border border-white/5">
-                {(['16:9', '9:16'] as const).map(ratio => (
-                  <button
-                    key={ratio}
-                    onClick={() => setAspectRatio(ratio)}
-                    disabled={isGenerating}
-                    className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                      aspectRatio === ratio ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
-                    }`}
-                  >
-                    {ratio === '16:9' ? 'Landscape' : 'Portrait'}
-                  </button>
-                ))}
+              <div className="relative group">
+                <select
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
+                  disabled={isGenerating}
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner"
+                >
+                  <option value="16:9">Landscape Cinema (16:9)</option>
+                  <option value="9:16">Portrait / Mobile (9:16)</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-chevron-down"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -180,21 +178,28 @@ const VideoStudio: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 pt-6 border-t border-white/5">
             <div className="flex-1 space-y-3 w-full">
               <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
-                 <span>Engine Authorization: <span className="text-emerald-500">Verified</span></span>
-                 <span>{isGenerating ? progressMsg : 'Forge Ready'}</span>
+                 <span className="flex items-center">
+                    <i className="fa-solid fa-check-double text-emerald-500 mr-2"></i>
+                    Neural Sync: Active
+                 </span>
+                 <span>{isGenerating ? progressMsg : 'System Idle'}</span>
               </div>
               <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                <div className={`h-full bg-indigo-600 transition-all duration-700 ${isGenerating ? 'w-full animate-pulse' : 'w-0'}`}></div>
+                <div className={`h-full bg-gradient-to-r from-indigo-600 to-purple-600 transition-all duration-700 ${isGenerating ? 'w-full animate-pulse' : 'w-0'}`}></div>
               </div>
             </div>
 
             <button
               onClick={handleGenerate}
               disabled={!prompt.trim() || isGenerating}
-              className="px-16 py-6 bg-white text-black rounded-3xl font-black text-sm uppercase tracking-[0.3em] hover:bg-slate-200 transition-all active:scale-95 shadow-2xl disabled:opacity-50 flex items-center"
+              className="px-16 py-6 bg-white text-black rounded-3xl font-black text-sm uppercase tracking-[0.3em] hover:bg-slate-200 transition-all active:scale-95 shadow-2xl disabled:opacity-50 flex items-center group"
             >
-              {isGenerating ? <i className="fa-solid fa-atom animate-spin mr-4 text-xl"></i> : <i className="fa-solid fa-bolt mr-4"></i>}
-              {isGenerating ? 'Rendering Asset' : 'Initialize Render'}
+              {isGenerating ? (
+                <i className="fa-solid fa-atom animate-spin mr-4 text-xl"></i>
+              ) : (
+                <i className="fa-solid fa-bolt-lightning mr-4 group-hover:animate-bounce"></i>
+              )}
+              {isGenerating ? 'Synthesizing...' : 'Initialize Render'}
             </button>
           </div>
         </div>
@@ -202,28 +207,31 @@ const VideoStudio: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {results.map(vid => (
-          <div key={vid.id} className="glass-card rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl group flex flex-col">
-            <div className="aspect-video bg-black relative">
+          <div key={vid.id} className="glass-card rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl group flex flex-col hover:border-indigo-500/30 transition-all">
+            <div className="aspect-video bg-black relative overflow-hidden">
               <video 
                 src={vid.url} 
                 controls 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-1000"
                 poster="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=800"
               />
               <div className="absolute top-6 right-6">
-                 <span className="px-4 py-1.5 bg-black/60 backdrop-blur-xl rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/10">Veo v3.1 Cinematic</span>
+                 <span className="px-4 py-1.5 bg-indigo-600/80 backdrop-blur-xl rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20 shadow-lg">Veo v3.1 Engine</span>
               </div>
             </div>
-            <div className="p-10 flex-1 flex flex-col justify-between space-y-6">
+            <div className="p-10 flex-1 flex flex-col justify-between space-y-6 bg-slate-900/40">
               <p className="text-slate-300 font-medium italic text-lg leading-relaxed">"{vid.prompt}"</p>
               <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{vid.timestamp.toLocaleString()}</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{vid.timestamp.toLocaleString()}</span>
+                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Format: {vid.url.includes('1080p') || resolution === '1080p' ? '1080p' : '720p'}</span>
+                </div>
                 <a 
                   href={vid.url} 
-                  download={`nova-motion-${vid.id}.mp4`}
-                  className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl"
+                  download={`nova-cinema-${vid.id}.mp4`}
+                  className="px-8 py-3 bg-white/5 hover:bg-white text-white hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10"
                 >
-                  Export Asset
+                  Export Master
                 </a>
               </div>
             </div>

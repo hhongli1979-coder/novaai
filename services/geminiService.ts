@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { MODELS } from "../constants";
 
 // Initialize GoogleGenAI using the mandatory apiKey structure from process.env.API_KEY.
@@ -24,6 +24,20 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
   return response.text;
 };
 
+// Neural Edge Operational Service (High-speed, "local-style" processing)
+export const processEdgeOperation = async (task: string, input: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: MODELS.LITE,
+    contents: `Task: ${task}\nInput Data: ${input}`,
+    config: {
+      systemInstruction: "You are Nova Edge, a high-performance operational node. Your goal is sub-second processing for logistical tasks like tagging, formatting, sentiment analysis, and metadata extraction. Be extremely concise.",
+      temperature: 0.1,
+    }
+  });
+  return response.text;
+};
+
 // Neural Translation Service
 export const translateText = async (text: string, targetLang: string, tone: string = 'professional') => {
   const ai = getAI();
@@ -42,6 +56,54 @@ export const translateText = async (text: string, targetLang: string, tone: stri
   });
   return response.text;
 };
+
+// Neural Speech Synthesis (TTS)
+export const generateSpeech = async (text: string, voiceName: string = 'Kore') => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: [{ parts: [{ text }] }],
+    config: {
+      responseModalities: [Modality.AUDIO],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName },
+        },
+      },
+    },
+  });
+  
+  const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+  if (!base64Audio) throw new Error("Voice synthesis failed.");
+  return base64Audio;
+};
+
+// Audio Decoding Helpers for Raw PCM from Gemini TTS
+export function decodeBase64(base64: string) {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+export async function playPcmAudio(data: Uint8Array, sampleRate: number = 24000) {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate });
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length;
+  const buffer = audioContext.createBuffer(1, frameCount, sampleRate);
+  const channelData = buffer.getChannelData(0);
+
+  for (let i = 0; i < frameCount; i++) {
+    channelData[i] = dataInt16[i] / 32768.0;
+  }
+
+  const source = audioContext.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioContext.destination);
+  source.start();
+}
 
 // Analyze AR Spatial Scene using Gemini Vision
 export const analyzeSpatialScene = async (base64Image: string) => {

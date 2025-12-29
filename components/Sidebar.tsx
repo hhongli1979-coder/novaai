@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AppRoute } from '../types';
+import { AppRoute, UserRole } from '../types';
 import { useSystem } from '../context/SystemContext';
 
 interface SidebarProps {
@@ -9,20 +9,23 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentRoute, onNavigate }) => {
-  const { systemHealth } = useSystem();
+  const { systemHealth, userRole } = useSystem();
   
-  const menuItems = [
-    { id: AppRoute.DASHBOARD, icon: 'fa-house', label: 'Command Center' },
-    { id: AppRoute.CHAT, icon: 'fa-brain', label: 'Nova Intelligence' },
-    { id: AppRoute.IMAGE, icon: 'fa-wand-magic-sparkles', label: 'Image Forge' },
-    { id: AppRoute.VIDEO, icon: 'fa-clapperboard', label: 'Cinema Studio' },
-    { id: AppRoute.TRANSLATE, icon: 'fa-language', label: 'Neural Translator' },
-    { id: AppRoute.AR_STORE, icon: 'fa-vr-cardboard', label: 'AR Store' },
-    { id: AppRoute.MARKETPLACE, icon: 'fa-store', label: 'Marketplace' },
-    { id: AppRoute.BUILDER, icon: 'fa-cubes', label: 'Site Builder' },
-    { id: AppRoute.ADMIN, icon: 'fa-shield-halved', label: 'Nova Admin Console' },
-    { id: AppRoute.SETTINGS, icon: 'fa-sliders', label: 'System Config' },
+  const allMenuItems = [
+    { id: AppRoute.DASHBOARD, icon: 'fa-house', label: 'Command Center', roles: [UserRole.ADMIN, UserRole.CREATOR, UserRole.GUEST] },
+    { id: AppRoute.CHAT, icon: 'fa-brain', label: 'Nova Intelligence', roles: [UserRole.ADMIN, UserRole.CREATOR, UserRole.GUEST] },
+    { id: AppRoute.IMAGE, icon: 'fa-wand-magic-sparkles', label: 'Image Forge', roles: [UserRole.ADMIN, UserRole.CREATOR, UserRole.GUEST] },
+    { id: AppRoute.VIDEO, icon: 'fa-clapperboard', label: 'Cinema Studio', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.TRANSLATE, icon: 'fa-language', label: 'Neural Translator', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.NEURAL_EDGE, icon: 'fa-bolt-lightning', label: 'Neural Edge (Ops)', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.AR_STORE, icon: 'fa-vr-cardboard', label: 'AR Store', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.MARKETPLACE, icon: 'fa-store', label: 'Marketplace', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.BUILDER, icon: 'fa-cubes', label: 'Site Builder', roles: [UserRole.ADMIN, UserRole.CREATOR] },
+    { id: AppRoute.ADMIN, icon: 'fa-shield-halved', label: 'Nova Admin Console', roles: [UserRole.ADMIN] },
+    { id: AppRoute.SETTINGS, icon: 'fa-sliders', label: 'System Config', roles: [UserRole.ADMIN] },
   ];
+
+  const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div className="w-72 bg-slate-950/50 backdrop-blur-3xl h-screen flex flex-col border-r border-white/5 relative z-50">
@@ -32,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentRoute, onNavigate }) => {
         </div>
         <div className="flex flex-col">
           <span className="text-xl font-black tracking-tighter text-white">NOVA OS</span>
-          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">v2.5 Enterprise</span>
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">{userRole} access</span>
         </div>
       </div>
 

@@ -1,11 +1,29 @@
 
 export type Role = 'user' | 'assistant';
 
+export enum UserRole {
+  ADMIN = 'admin',
+  CREATOR = 'creator',
+  GUEST = 'guest'
+}
+
 export interface Message {
   id: string;
   role: Role;
   content: string;
   timestamp: Date;
+}
+
+export interface AIAgent {
+  id: string;
+  name: string;
+  specialty: string;
+  description: string;
+  avatar: string;
+  pricePerTask: string;
+  rating: number;
+  capabilities: string[];
+  systemInstruction: string;
 }
 
 export interface GeneratedImage {
@@ -31,25 +49,27 @@ export interface UserSite {
   lastModified: Date;
 }
 
-export interface DatabaseTable {
-  name: string;
-  rows: number;
-  size: string;
-  health: 'optimal' | 'vacuuming' | 'indexing';
+// AppRoute must be an enum to be used as a value for navigation and identification.
+export enum AppRoute {
+  DASHBOARD = 'dashboard',
+  CHAT = 'chat',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  TRANSLATE = 'translate',
+  NEURAL_EDGE = 'neural-edge',
+  BUILDER = 'builder',
+  AR_STORE = 'ar-store',
+  MARKETPLACE = 'marketplace',
+  SETTINGS = 'settings',
+  ADMIN = 'admin'
 }
 
-export interface QueryLog {
-  id: string;
-  query: string;
-  duration: number;
-  timestamp: Date;
-}
-
+// Missing types for AdminConsole.tsx
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  tier: 'Silicon' | 'Carbon' | 'Neural';
+  tier: string;
   status: 'active' | 'suspended';
   computeUsed: number;
 }
@@ -59,18 +79,19 @@ export interface Transaction {
   user: string;
   amount: number;
   date: Date;
-  status: 'success' | 'pending' | 'failed';
+  status: 'success' | 'failed' | 'pending';
 }
 
-export enum AppRoute {
-  DASHBOARD = 'dashboard',
-  CHAT = 'chat',
-  IMAGE = 'image',
-  VIDEO = 'video',
-  TRANSLATE = 'translate',
-  BUILDER = 'builder',
-  AR_STORE = 'ar-store',
-  MARKETPLACE = 'marketplace',
-  SETTINGS = 'settings',
-  ADMIN = 'admin'
+export interface DatabaseTable {
+  name: string;
+  rows: number;
+  size: string;
+  health: 'optimal' | 'indexing' | 'vacuuming' | 'degraded';
+}
+
+export interface QueryLog {
+  id: string;
+  query: string;
+  duration: number;
+  timestamp: Date;
 }

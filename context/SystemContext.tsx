@@ -9,6 +9,14 @@ interface SystemSettings {
   globalComputeBudget: number;
   activeModel: string;
   maintenanceMode: boolean;
+  // Deployment Secrets
+  vercelToken: string;
+  vercelOrgId: string;
+  vercelProjectId: string;
+  // AI Gateway & Domain Config
+  isAiGatewayEnabled: boolean;
+  aiGatewayUrl: string;
+  baseDomain: string;
 }
 
 interface SystemContextType {
@@ -29,7 +37,13 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       isBuilderEnabled: true,
       globalComputeBudget: 50000,
       activeModel: 'gemini-3-pro-preview',
-      maintenanceMode: false
+      maintenanceMode: false,
+      vercelToken: 'PErQ5t3NuiAhmAqQItLOs5bu',
+      vercelOrgId: 'team_dStSuF1KPFzCGimCSrbIwE1G',
+      vercelProjectId: 'prj_1L4JOA8gf4iDgAg7d8JDyhCv426n',
+      isAiGatewayEnabled: false,
+      aiGatewayUrl: 'https://gateway.mdio.shop/v1',
+      baseDomain: 'mdio.shop'
     };
   });
 

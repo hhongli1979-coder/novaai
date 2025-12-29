@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import { AppRoute } from './types';
 import Dashboard from './features/dashboard/Dashboard';
 import AIChat from './features/chat/AIChat';
 import ImageForge from './features/image/ImageForge';
 import VideoStudio from './features/video/VideoStudio';
+import TranslateFeature from './features/translate/TranslateFeature';
 import VirtualStore from './features/ar-store/VirtualStore';
 import Marketplace from './features/marketplace/Marketplace';
 import SiteBuilder from './features/builder/SiteBuilder';
@@ -13,6 +14,38 @@ import AdminConsole from './features/admin/AdminConsole';
 
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.DASHBOARD);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isBooting, setIsBooting] = useState(true);
+  const [bootLog, setBootLog] = useState<string[]>([]);
+
+  // System Boot Sequence Simulation
+  useEffect(() => {
+    const sequences = [
+      "Initializing Nova Kernel v2.5...",
+      "Connecting to Global Neural Mesh...",
+      "Mapping Vercel Cloud Infrastructure...",
+      "Synchronizing with mdio.shop edge nodes...",
+      "Activating Gemini 3 Pro reasoning cluster...",
+      "System Ready. Awaiting Master Identity..."
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < sequences.length) {
+        setBootLog(prev => [...prev, `[OK] ${sequences[i]}`]);
+        i++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => setIsBooting(false), 800);
+      }
+    }, 400);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
 
   const renderContent = () => {
     switch (currentRoute) {
@@ -24,6 +57,8 @@ const App: React.FC = () => {
         return <ImageForge />;
       case AppRoute.VIDEO:
         return <VideoStudio />;
+      case AppRoute.TRANSLATE:
+        return <TranslateFeature />;
       case AppRoute.AR_STORE:
         return <VirtualStore />;
       case AppRoute.MARKETPLACE:
@@ -75,6 +110,47 @@ const App: React.FC = () => {
         return <Dashboard onNavigate={setCurrentRoute} />;
     }
   };
+
+  if (isBooting) {
+    return (
+      <div className="h-screen w-screen bg-[#020617] flex flex-col items-center justify-center p-10 font-mono">
+        <div className="w-24 h-24 bg-indigo-600 rounded-3xl flex items-center justify-center text-white text-4xl mb-12 animate-pulse shadow-[0_0_50px_rgba(79,70,229,0.4)]">
+           <i className="fa-solid fa-atom animate-spin-slow"></i>
+        </div>
+        <div className="w-full max-w-md space-y-2">
+          {bootLog.map((log, idx) => (
+            <p key={idx} className="text-indigo-400 text-xs tracking-wider animate-in fade-in slide-in-from-left-2">{log}</p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen w-screen bg-[#020617] flex items-center justify-center p-10 relative overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[150px] rounded-full"></div>
+        
+        <div className="glass-card max-w-md w-full rounded-[3rem] p-12 border border-white/10 shadow-2xl flex flex-col items-center text-center space-y-10 relative z-10">
+           <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-indigo-400 text-3xl">
+              <i className="fa-solid fa-fingerprint animate-pulse"></i>
+           </div>
+           <div className="space-y-3">
+              <h1 className="text-4xl font-black text-white tracking-tighter">NOVA <span className="gradient-text">OS</span></h1>
+              <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px]">Master Identity Verification</p>
+           </div>
+           <button 
+             onClick={handleLogin}
+             className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/20 transition-all active:scale-95"
+           >
+             Initialize Neural Link
+           </button>
+           <p className="text-[9px] text-slate-600 font-medium">By connecting, you agree to the Nova Autonomous System Protocols.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#020617] text-slate-100 relative selection:bg-indigo-500/30">

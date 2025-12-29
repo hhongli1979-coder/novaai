@@ -67,6 +67,7 @@ export enum AppRoute {
   CHAT = 'chat',
   IMAGE = 'image',
   VIDEO = 'video',
+  TRANSLATE = 'translate',
   BUILDER = 'builder',
   AR_STORE = 'ar-store',
   MARKETPLACE = 'marketplace',

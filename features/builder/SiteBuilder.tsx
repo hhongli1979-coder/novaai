@@ -30,7 +30,8 @@ const SiteBuilder: React.FC = () => {
         setTimeout(() => {
           setIsBuilding(false);
           setStep(0);
-          alert("Site generation complete! Your site is now live at: nova-site-" + Math.random().toString(36).substring(7) + ".nova.ai");
+          const sub = Math.random().toString(36).substring(7);
+          alert(`Site generation complete! Your site is now live at: https://${sub}.${settings.baseDomain}`);
         }, 1000);
       }
     }, 1500);

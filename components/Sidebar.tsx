@@ -16,6 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentRoute, onNavigate }) => {
     { id: AppRoute.CHAT, icon: 'fa-brain', label: 'Nova Intelligence' },
     { id: AppRoute.IMAGE, icon: 'fa-wand-magic-sparkles', label: 'Image Forge' },
     { id: AppRoute.VIDEO, icon: 'fa-clapperboard', label: 'Cinema Studio' },
+    { id: AppRoute.TRANSLATE, icon: 'fa-language', label: 'Neural Translator' },
     { id: AppRoute.AR_STORE, icon: 'fa-vr-cardboard', label: 'AR Store' },
     { id: AppRoute.MARKETPLACE, icon: 'fa-store', label: 'Marketplace' },
     { id: AppRoute.BUILDER, icon: 'fa-cubes', label: 'Site Builder' },

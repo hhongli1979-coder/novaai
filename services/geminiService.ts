@@ -24,6 +24,25 @@ export const chatWithGemini = async (message: string, history: { role: 'user' | 
   return response.text;
 };
 
+// Neural Translation Service
+export const translateText = async (text: string, targetLang: string, tone: string = 'professional') => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: MODELS.TEXT,
+    contents: `Translate the following text to ${targetLang}. 
+    Maintain a ${tone} tone. 
+    Ensure cultural nuances and creative context are preserved.
+    
+    Text to translate:
+    "${text}"`,
+    config: {
+      systemInstruction: "You are the Nova Neural Translation module. You specialize in high-fidelity, context-aware linguistic mapping.",
+      temperature: 0.3,
+    }
+  });
+  return response.text;
+};
+
 // Analyze AR Spatial Scene using Gemini Vision
 export const analyzeSpatialScene = async (base64Image: string) => {
   const ai = getAI();

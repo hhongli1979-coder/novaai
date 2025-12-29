@@ -128,3 +128,26 @@ const VideoFeature: React.FC = () => {
               className="w-full aspect-video object-cover"
               poster="https://picsum.photos/800/450"
             />
+            <div className="p-6">
+              <p className="text-sm text-slate-300 line-clamp-2 mb-4">"{vid.prompt}"</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500">
+                  {vid.timestamp.toLocaleDateString()}
+                </span>
+                <a 
+                  href={vid.url} 
+                  download={`nova-vid-${vid.id}.mp4`}
+                  className="text-indigo-400 hover:text-indigo-300 text-sm font-semibold flex items-center"
+                >
+                  <i className="fa-solid fa-download mr-2"></i> Download MP4
+                </a>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default VideoFeature;

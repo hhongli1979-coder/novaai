@@ -12,6 +12,8 @@ import VirtualStore from './features/ar-store/VirtualStore';
 import Marketplace from './features/marketplace/Marketplace';
 import SiteBuilder from './features/builder/SiteBuilder';
 import AdminConsole from './features/admin/AdminConsole';
+import AgentManagerFeature from './features/agent-manager/AgentManagerFeature';
+import FigmaIngest from './features/figma/FigmaIngest';
 import { useSystem } from './context/SystemContext';
 
 const App: React.FC = () => {
@@ -59,8 +61,8 @@ const App: React.FC = () => {
       return <Dashboard onNavigate={setCurrentRoute} />;
     }
 
-    // Route guard for Creator-tier features (Video, AR, etc)
-    const creatorRoutes = [AppRoute.VIDEO, AppRoute.TRANSLATE, AppRoute.NEURAL_EDGE, AppRoute.AR_STORE, AppRoute.MARKETPLACE, AppRoute.BUILDER];
+    // Route guard for Creator-tier features
+    const creatorRoutes = [AppRoute.VIDEO, AppRoute.NEURAL_EDGE, AppRoute.AR_STORE, AppRoute.MARKETPLACE, AppRoute.BUILDER, AppRoute.AGENT_MANAGER, AppRoute.FIGMA];
     if (creatorRoutes.includes(currentRoute) && userRole === UserRole.GUEST) {
       return <Dashboard onNavigate={setCurrentRoute} />;
     }
@@ -84,6 +86,10 @@ const App: React.FC = () => {
         return <Marketplace />;
       case AppRoute.BUILDER:
         return <SiteBuilder />;
+      case AppRoute.AGENT_MANAGER:
+        return <AgentManagerFeature />;
+      case AppRoute.FIGMA:
+        return <FigmaIngest />;
       case AppRoute.ADMIN:
         return <AdminConsole />;
       case AppRoute.SETTINGS:

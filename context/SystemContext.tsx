@@ -82,7 +82,13 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const hireAgent = (agent: AIAgent) => {
     setHiredAgents(prev => {
-      if (prev.find(a => a.id === agent.id)) return prev;
+      const existingIdx = prev.findIndex(a => a.id === agent.id);
+      if (existingIdx !== -1) {
+        // Update existing agent (e.g. during evolution)
+        const next = [...prev];
+        next[existingIdx] = agent;
+        return next;
+      }
       return [...prev, agent];
     });
   };

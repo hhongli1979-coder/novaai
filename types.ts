@@ -24,6 +24,11 @@ export interface AIAgent {
   rating: number;
   capabilities: string[];
   systemInstruction: string;
+  model?: string;
+  status?: 'idle' | 'active' | 'forging';
+  evolutionLevel?: number;
+  neuralDensity?: number;
+  deploymentUrl?: string;
 }
 
 export interface GeneratedImage {
@@ -49,7 +54,6 @@ export interface UserSite {
   lastModified: Date;
 }
 
-// AppRoute must be an enum to be used as a value for navigation and identification.
 export enum AppRoute {
   DASHBOARD = 'dashboard',
   CHAT = 'chat',
@@ -60,11 +64,12 @@ export enum AppRoute {
   BUILDER = 'builder',
   AR_STORE = 'ar-store',
   MARKETPLACE = 'marketplace',
+  AGENT_MANAGER = 'agent-manager',
+  FIGMA = 'figma',
   SETTINGS = 'settings',
   ADMIN = 'admin'
 }
 
-// Missing types for AdminConsole.tsx
 export interface UserProfile {
   id: string;
   name: string;

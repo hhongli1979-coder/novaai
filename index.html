@@ -13,31 +13,52 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #020617;
             color: #f8fafc;
+            overflow: hidden;
         }
         .gradient-text {
             background: linear-gradient(to right, #6366f1, #a855f7, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            will-change: transform, opacity;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(6px); /* Further reduced radius for performance stability */
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+            will-change: transform; /* removed backdrop-filter from will-change to avoid layer explosion */
         }
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(2deg); }
+            50% { transform: translateY(-8px) rotate(0.5deg); }
             100% { transform: translateY(0px) rotate(0deg); }
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-spin-slow { animation: spin 12s linear infinite; }
-        .animate-pulse-slow { animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-float { 
+            animation: float 6s ease-in-out infinite; 
+            will-change: transform;
+        }
+        .animate-spin-slow { 
+            animation: spin 12s linear infinite; 
+            will-change: transform;
+        }
+        .animate-pulse-slow { 
+            animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+            will-change: opacity;
+        }
         
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 20px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.2); border-radius: 10px; }
+        
+        .accelerate {
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.2) transparent;
+        }
     </style>
 <script type="importmap">
 {

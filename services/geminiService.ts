@@ -130,6 +130,96 @@ export const analyzeSpatialScene = async (base64Image: string) => {
   return response.text;
 };
 
+// Multimodal Design Analysis
+export const analyzeDesignShard = async (imageUrl: string, prompt: string) => {
+  const ai = getAI();
+  
+  // Fetch image bytes
+  const imgResponse = await fetch(imageUrl);
+  const blob = await imgResponse.blob();
+  const reader = new FileReader();
+  const base64Promise = new Promise<string>((resolve) => {
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+  const base64Data = await base64Promise;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: {
+      parts: [
+        { inlineData: { data: base64Data, mimeType: blob.type } },
+        { text: prompt }
+      ]
+    },
+    config: {
+      systemInstruction: "You are Nova Architect. You analyze design mockups and provide precise technical feedback, structural component mapping, and accessibility audits. Focus on React and Tailwind CSS implementation strategies."
+    }
+  });
+  return response.text;
+};
+
+// Generate reusable React component from design image
+export const generateReactComponentFromImage = async (imageUrl: string, componentName: string) => {
+  const ai = getAI();
+  
+  const imgResponse = await fetch(imageUrl);
+  const blob = await imgResponse.blob();
+  const reader = new FileReader();
+  const base64Promise = new Promise<string>((resolve) => {
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+  const base64Data = await base64Promise;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: {
+      parts: [
+        { inlineData: { data: base64Data, mimeType: blob.type } },
+        { text: `Synthesize a reusable React 19 functional component named "${componentName}" based on this design. 
+        Requirements:
+        1. Use Tailwind CSS for all styling.
+        2. Ensure high fidelity to the layout, colors, and typography shown.
+        3. Include appropriate ARIA attributes (role, aria-label, aria-hidden, aria-expanded, etc.) for high accessibility.
+        4. Use semantic HTML5 elements.
+        5. Return ONLY the code block, no explanations.` }
+      ]
+    },
+    config: {
+      systemInstruction: "You are Nova Coder. You transform visual designs into production-grade, accessible React 19 components."
+    }
+  });
+  return response.text;
+};
+
+// Generate reusable React component from Figma JSON structure
+export const generateReactComponentFromStructure = async (nodeData: any, componentName: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-pro-preview',
+    contents: `Transform this Figma node structural metadata into a highly optimized, reusable React 19 component named "${componentName}".
+    
+    Source Metadata:
+    ${JSON.stringify(nodeData, null, 2)}
+    
+    Technical Directive:
+    1. Implementation: Use React 19 patterns (functional components, clean prop structures).
+    2. Styling: Exclusively use Tailwind CSS. Map Figma values like padding, itemSpacing, layoutMode (flex), colors, and opacity to the closest Tailwind utility classes.
+    3. Structural Fidelity: Maintain the hierarchy of frames, components, and groups as nested <div>, <section>, or <article> elements.
+    4. Accessibility (A11y): Integrate deep accessibility support. Use semantic HTML5 tags (<button>, <nav>, <header>). Add ARIA roles, aria-labels based on text content, and tabIndex where interactivity is implied.
+    5. Icons: If icons are detected in vector data, use Lucide-react or FontAwesome icon components as placeholders.
+    6. Code Quality: Return a complete, self-contained TypeScript file content.
+    
+    Return ONLY the code block.`,
+    config: {
+      systemInstruction: "You are Nova Coder v4.0. You specialize in transmuting Figma's internal tree structure into pixel-perfect, accessible React production code.",
+      temperature: 0.1
+    }
+  });
+  return response.text;
+};
+
 // Generate image using Gemini models.
 export const generateImageWithGemini = async (prompt: string, options?: any) => {
   const ai = getAI();

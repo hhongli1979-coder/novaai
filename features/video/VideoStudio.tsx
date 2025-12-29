@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GeneratedVideo } from '../../types';
 import { generateVideoWithVeo } from '../../services/geminiService';
 import { useSystem } from '../../context/SystemContext';
@@ -16,10 +16,24 @@ const VideoStudio: React.FC = () => {
   const [progressMsg, setProgressMsg] = useState('');
   const [results, setResults] = useState<GeneratedVideo[]>([]);
   const [hasApiKey, setHasApiKey] = useState(false);
+  
+  // Custom dropdown states
+  const [resDropdownOpen, setResDropdownOpen] = useState(false);
+  const [ratioDropdownOpen, setRatioDropdownOpen] = useState(false);
+  
   const { settings } = useSystem();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkKeyStatus();
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setResDropdownOpen(false);
+        setRatioDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const checkKeyStatus = async () => {
@@ -34,7 +48,6 @@ const VideoStudio: React.FC = () => {
   const handleOpenKeySelector = async () => {
     try {
       await (window as any).aistudio?.openSelectKey();
-      // Proceeding after triggering as per race condition guidelines
       setHasApiKey(true);
     } catch (e) {
       console.error("Authorization Interface Failed", e);
@@ -47,7 +60,6 @@ const VideoStudio: React.FC = () => {
     setIsGenerating(true);
     setProgressMsg("Connecting to Cinematic Render Cluster...");
     try {
-      // Passing the resolution state to the Veo service
       const videoUrl = await generateVideoWithVeo(prompt, resolution, aspectRatio, setProgressMsg);
       const newResult: GeneratedVideo = {
         id: Date.now().toString(),
@@ -131,47 +143,69 @@ const VideoStudio: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* RESOLUTION SELECTOR */}
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={dropdownRef}>
+            {/* RESOLUTION SELECTOR (CUSTOM DROPDOWN) */}
+            <div className="space-y-4 relative">
               <label className="block text-xs font-black text-slate-500 uppercase tracking-widest px-2 flex items-center">
                 <i className="fa-solid fa-expand mr-3 text-indigo-400"></i> Output Fidelity
               </label>
-              <div className="relative group">
-                <select
-                  value={resolution}
-                  onChange={(e) => setResolution(e.target.value as '720p' | '1080p')}
-                  disabled={isGenerating}
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner"
-                >
-                  <option value="720p">720p - Standard High Definition</option>
-                  <option value="1080p">1080p - Ultra High Fidelity Cinema</option>
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-white transition-colors">
-                  <i className="fa-solid fa-chevron-down"></i>
+              <button
+                onClick={() => { setResDropdownOpen(!resDropdownOpen); setRatioDropdownOpen(false); }}
+                disabled={isGenerating}
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner group"
+              >
+                <span>{resolution === '1080p' ? '1080p Ultra High Fidelity' : '720p Standard Definition'}</span>
+                <i className={`fa-solid fa-chevron-down transition-transform duration-300 ${resDropdownOpen ? 'rotate-180' : ''}`}></i>
+              </button>
+              
+              {resDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden z-[100] shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <button
+                    onClick={() => { setResolution('720p'); setResDropdownOpen(false); }}
+                    className={`w-full text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all border-b border-white/5 ${resolution === '720p' ? 'bg-indigo-600/20 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    720p - Standard High Definition
+                  </button>
+                  <button
+                    onClick={() => { setResolution('1080p'); setResDropdownOpen(false); }}
+                    className={`w-full text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${resolution === '1080p' ? 'bg-indigo-600/20 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    1080p - Ultra High Fidelity Cinema
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* ASPECT RATIO SELECTOR */}
-            <div className="space-y-4">
+            {/* ASPECT RATIO SELECTOR (CUSTOM DROPDOWN) */}
+            <div className="space-y-4 relative">
               <label className="block text-xs font-black text-slate-500 uppercase tracking-widest px-2 flex items-center">
                 <i className="fa-solid fa-crop mr-3 text-indigo-400"></i> Frame Mapping
               </label>
-              <div className="relative group">
-                <select
-                  value={aspectRatio}
-                  onChange={(e) => setAspectRatio(e.target.value as '16:9' | '9:16')}
-                  disabled={isGenerating}
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner"
-                >
-                  <option value="16:9">Landscape Cinema (16:9)</option>
-                  <option value="9:16">Portrait / Mobile (9:16)</option>
-                </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-white transition-colors">
-                  <i className="fa-solid fa-chevron-down"></i>
+              <button
+                onClick={() => { setRatioDropdownOpen(!ratioDropdownOpen); setResDropdownOpen(false); }}
+                disabled={isGenerating}
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest text-white flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500/50 cursor-pointer disabled:opacity-50 transition-all hover:bg-slate-900 shadow-inner group"
+              >
+                <span>{aspectRatio === '16:9' ? 'Landscape Cinema (16:9)' : 'Portrait / Mobile (9:16)'}</span>
+                <i className={`fa-solid fa-chevron-down transition-transform duration-300 ${ratioDropdownOpen ? 'rotate-180' : ''}`}></i>
+              </button>
+
+              {ratioDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden z-[100] shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <button
+                    onClick={() => { setAspectRatio('16:9'); setRatioDropdownOpen(false); }}
+                    className={`w-full text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all border-b border-white/5 ${aspectRatio === '16:9' ? 'bg-indigo-600/20 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    Landscape Cinema (16:9)
+                  </button>
+                  <button
+                    onClick={() => { setAspectRatio('9:16'); setRatioDropdownOpen(false); }}
+                    className={`w-full text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all ${aspectRatio === '9:16' ? 'bg-indigo-600/20 text-indigo-400' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    Portrait / Mobile (9:16)
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

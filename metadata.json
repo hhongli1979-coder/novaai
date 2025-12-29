@@ -1,0 +1,9 @@
+{
+  "name": "Nova AI Creative OS",
+  "description": "The world's first autonomous creative operating system. Automated site building, AR commerce, and cinema-grade video generation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

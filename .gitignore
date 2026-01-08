@@ -24,11 +24,15 @@ dist-ssr
 *.sw?
 
 # Python
-__pycache__
-*.py[cod]
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 *$py.class
 *.so
 .Python
 env/
 venv/
+.venv/
+*.egg-info/
 .env
